@@ -18,7 +18,7 @@ class LaravelExternalJwtGuardServiceProvider extends ServiceProvider
             return new JwtUserProvider($config['model'], $app['request'], @$config['auth_server']?: 'default');
         });
         
-        if ($this->app->runningInConsole()) {
+        if (function_exists('config_path')) { // function not available and 'publish' not relevant in Lumen
             $this->publishes([
                 __DIR__.'/../config/config.php' => config_path('externaljwtguard.php'),
             ], 'config');
