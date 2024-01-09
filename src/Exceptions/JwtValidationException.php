@@ -2,9 +2,9 @@
 
 namespace Abublihi\LaravelExternalJwtGuard\Exceptions;
 
-use Exception;
+use Illuminate\Auth\AuthenticationException;
 
-class JwtValidationException extends Exception
+class JwtValidationException extends AuthenticationException
 {
     // 
 }
