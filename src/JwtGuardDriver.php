@@ -5,22 +5,44 @@ namespace Abublihi\LaravelExternalJwtGuard;
 use Illuminate\Http\Request;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Abublihi\LaravelExternalJwtGuard\Support\JwtParser;
+use Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction;
+use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindUserWithProvidedIdException;
 
 class JwtGuardDriver implements Guard
 {
     use GuardHelpers;
     
     private Request $request;
+    private AuthorizationServerConfig $authorizationServerConfig;
+    private JwtParser $parsedJwt;
 
     public function __construct(
         UserProvider $provider,
-        Request $request
-    )
-    {
+        Request $request,
+        string $authorizationServerKey = 'default'
+    ) {
         $this->provider = $provider;
         $this->request = $request;
+        $this->authorizationServerConfig = AuthorizationServerConfig::buildFromConfigKey($authorizationServerKey);
+
+        $this->parsedJwt = $this->parseJwt();
+    }
+
+    private function parseJwt(): JwtParser
+    {
+        return new JwtParser(
+            jwt: $this->request->bearerToken(),
+            publicKey: $this->authorizationServerConfig->publicKey,
+            idClaim: $this->authorizationServerConfig->idClaim,
+            rolesClaim: $this->authorizationServerConfig->roleClaim,
+            algorithm: $this->authorizationServerConfig->signingAlgorithm,
+            issuer: $this->authorizationServerConfig->issuer,
+            validateIssuer: $this->authorizationServerConfig->validateIssuer,
+        );
     }
 
     /**
@@ -35,14 +57,25 @@ class JwtGuardDriver implements Guard
             return $this->user;
         }
 
-        $user = null;
+        $user = $this->provider->retrieveByCredentials(
+            [
+                $this->authorizationServerConfig->idAttribute => $this->parsedJwt->getId(),
+            ]
+        );
 
-        $token = $this->request->bearerToken();
+        if (! $user  
+            && $this->authorizationServerConfig->createUser  
+            // && $this->provider instanceof EloquentUserProvider // NOTE: the only provider supports creating the user is Eloquent 
+        ) {
+            $user = (new $this->authorizationServerConfig->createUserActionClass)->create(
+                $this->provider,
+                $this->parsedJwt,
+                $this->authorizationServerConfig
+            );
+        }
 
-        if (! empty($token)) {
-            $user = $this->provider->retrieveByCredentials([
-                'token' => $token,
-            ]);
+        if (! $user) {
+            throw new CouldNotFindUserWithProvidedIdException("id_attribute: {$this->authorizationServerConfig->idAttribute}, auth server id: {$this->parsedJwt->getId()}");
         }
 
         return $this->user = $user;
@@ -53,8 +86,6 @@ class JwtGuardDriver implements Guard
      */
     public function validate(array $credentials = [])
     {
-        return $this->provider->validateCredentials([
-            'token' => $this->request->bearerToken(),
-        ]);
+        return $this->parsedJwt->getIsJwtValid();
     }
 }
