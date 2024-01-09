@@ -16,17 +16,16 @@ return [
              * This will be used to match the id_claim with the id in the corresponding model
              * 
              * Example: 
-             * if you have configured a provider with the following 
+             * if you have configured a guard with the following 
              * 
-               'providers' => [
-                    'users' => [
-                        'driver' => 'jwt-user',
-                        'model' => App\Models\User::class,
-                        'auth_server' => 'default',
+               'guards' => [
+                    'api' => [
+                        'driver' => 'external-jwt-auth', // our driver
+                        'provider' => 'users',
                     ],
                 ]
              * 
-             * Then the package will look into your model with App\Models\User::where('id', idClaim)->first()
+             * Then the package will look into your provider with the id attribute and the claim `where('id_attribute', '=', 'id_claim')`
              */
             'id_attribute' => env('JWT_GUARD_ID_ATTRIBUTE', 'id'),
 
@@ -37,6 +36,8 @@ return [
              */
 
             'create_user' =>  env('JWT_GUARD_CREATE_USER', false),
+            // you can define your own action by implementing the interface Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface
+            'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class,
             // create random password for the newly created user if password attribute exists on the database table, 
             // and you set the create_user to true you should also set this to true
             'random_password_on_creation' => env('JWT_GUARD_CREATE_USER', false),
