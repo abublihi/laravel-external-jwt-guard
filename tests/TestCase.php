@@ -7,14 +7,12 @@ use Illuminate\Http\Request;
 use Lcobucci\JWT\Token\Builder;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
 use Abublihi\LaravelExternalJwtGuard\Tests\User;
-use Illuminate\Support\Facades\Auth;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Illuminate\Contracts\Config\Repository;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
 use Orchestra\Testbench\Attributes\WithMigration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Abublihi\LaravelExternalJwtGuard\JwtGuardDriver;
 use Abublihi\LaravelExternalJwtGuard\LaravelExternalJwtGuardServiceProvider;
 
 #[WithMigration]
@@ -28,10 +26,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // $this->afterApplicationCreated(function () {
         //     // Code after application created.
         // });
-
-        Auth::extend('jwt-api', function ($app, string $name, array $config) { 
-            return new JwtGuardDriver(Auth::createUserProvider($config['provider']), $app->make('request'));
-        });
     }
 
        /**
@@ -43,13 +37,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function defineEnvironment($app): void
     {
         tap($app['config'], function (Repository $config) {
-            $config->set('auth.providers.users', [
-                'driver' => 'jwt-user',
-                'model' => User::class,
-            ]);
+            $config->set('auth.providers.users.model', User::class);
 
             $config->set('auth.guards.jwt-guard', [
-                'driver' => 'jwt-api',
+                'driver' => 'external-jwt-auth',
                 'provider' => 'users',
             ]);
 
@@ -69,6 +60,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
                 'validate_issuer' => true,
                 'public_key' => $this->getPublicKey(), // if RSA make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
                 'signing_algorithm' => 'RS256',
+                'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class,
             ]);
         });
     }
