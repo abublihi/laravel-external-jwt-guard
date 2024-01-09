@@ -2,11 +2,9 @@
 
 namespace Abublihi\LaravelExternalJwtGuard\Support;
 
-use DateTimeImmutable;
 use Lcobucci\JWT\JwtFacade;
 use Lcobucci\Clock\FrozenClock;
 use Lcobucci\JWT\UnencryptedToken;
-use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Validation\Constraint;
 use Abublihi\LaravelExternalJwtGuard\Exceptions\JwtValidationException;
