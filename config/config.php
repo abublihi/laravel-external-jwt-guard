@@ -45,8 +45,8 @@ return [
             'creation_claim_attribute_map' => [
                 // jwt_claim => database_attribute
                 // 'employee.email' => 'email' // you can look for a claim using dot(.) this will get employee claim and then look for the email in employee claim
-                'sub' => 'id',
-                'name' => 'name', 
+                // 'sub' => 'id',
+                // 'name' => 'name', 
             ],
 
             /*
@@ -57,7 +57,7 @@ return [
 
             'issuer' => '',
             'validate_issuer' => true,
-            'public_key' => env('JWT_GUARD_AUTH_SERVER_PUBLIC_KEY'), // if RSA make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
+            'public_key' => env('JWT_GUARD_AUTH_SERVER_PUBLIC_KEY'), // if RSA, make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
             'signing_algorithm' => env('JWT_GUARD_AUTH_SIGN_ALG', 'RS256'),
         ],
         // you could add as many as you want of the authorization servers by duplicating the configurations above ^^

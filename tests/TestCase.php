@@ -28,7 +28,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // });
     }
 
-       /**
+    /**
      * Define environment setup.
      *
      * @param  \Illuminate\Foundation\Application  $app
@@ -91,10 +91,12 @@ class TestCase extends \Orchestra\Testbench\TestCase
         // (new \CreateUsersTable)->up();
         // perform environment setup
     }
+
     /**
      * @return string
      * @param string $signingKeyPath
      * @param array<string> $roles
+     * @param array<int,mixed> $customClaims
      */
     protected function issueToken(
         array $roles = [],
@@ -141,7 +143,6 @@ class TestCase extends \Orchestra\Testbench\TestCase
         return $token->toString();
     }
    
-
     protected function getPublicKey()
     {
         return file_get_contents(__DIR__.'/TestKeys/public.pem');
@@ -157,18 +158,5 @@ class TestCase extends \Orchestra\Testbench\TestCase
     protected function resolveApplicationConfiguration($app): void
     {
         parent::resolveApplicationConfiguration($app);
-
-        
-        // $app['config']->set('auth.providers.users.model', CustomUser::class);
     }
-
-    // #[Test]
-    // #[DefineRoute('usesAuthRoutes')]
-    // function test_it_returns_authenticated_user_by_jwt()
-    // {
-    //     $response = $this->getJson('current-user');
-
-    //     dd($response);
-    //     $response->assertSuccessful();
-    // }
 }
