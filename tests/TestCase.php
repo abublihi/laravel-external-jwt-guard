@@ -56,7 +56,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
                     'name' => 'name', 
                     'email' => 'email', 
                 ],
-                'issuer' => '',
+                'issuer' => 'http://example.com',
                 'validate_issuer' => true,
                 'public_key' => $this->getPublicKey(), // if RSA make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
                 'signing_algorithm' => 'RS256',

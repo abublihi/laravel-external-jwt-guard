@@ -76,11 +76,24 @@ class JwtParser
             $this->errorMessage = $e->getMessage();
             return false;
         }
-     
         
         $this->parsedJwt = $token;
-        $this->isJwtValid = true;
 
+        if ($this->validateIssuer) {
+            $iss = $this->getClaim('iss');
+            if (empty($iss)) {
+                $this->errorMessage = 'iss claim not found in the JWT, could not validate issuer, you should disable validating the issuer';
+                return false;
+            }
+
+            if ($iss != $this->issuer) {
+                $this->errorMessage = "Issuer is not valid token issued by: $iss, and it should be issued by {$this->issuer}";
+                return false;
+            }
+        }
+
+        $this->isJwtValid = true;
+        
         return true;
     }
 
