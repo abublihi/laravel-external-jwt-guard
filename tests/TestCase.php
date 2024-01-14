@@ -11,11 +11,9 @@ use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Illuminate\Contracts\Config\Repository;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
-use Orchestra\Testbench\Attributes\WithMigration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Abublihi\LaravelExternalJwtGuard\LaravelExternalJwtGuardServiceProvider;
 
-#[WithMigration]
 class TestCase extends \Orchestra\Testbench\TestCase
 {
     use RefreshDatabase;
@@ -94,8 +92,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
     /**
      * @return string
-     * @param string $signingKeyPath
      * @param array<string> $roles
+     * @param string $sub
+     * @param bool $validToken true
+     * @param string $uid
      * @param array<int,mixed> $customClaims
      */
     protected function issueToken(

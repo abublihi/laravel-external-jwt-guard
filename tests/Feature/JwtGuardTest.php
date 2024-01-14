@@ -9,20 +9,30 @@ use Abublihi\LaravelExternalJwtGuard\Tests\User;
 use Orchestra\Testbench\Attributes\WithMigration;
 use Abublihi\LaravelExternalJwtGuard\JwtGuardDriver;
 use Abublihi\LaravelExternalJwtGuard\Tests\TestCase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Abublihi\LaravelExternalJwtGuard\Support\JwtParser;
+use Orchestra\Testbench\Concerns\WithLaravelMigrations;
 use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindUserWithProvidedIdException;
 
-#[WithMigration]
+/**
+ * @withMigrations
+ */
 class JwtGuardTest extends TestCase
 {
-    #[DefineRoute('usesAuthRoutes')]
+    use DatabaseMigrations, WithLaravelMigrations;
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_returns_exists_authenticated_user_by_jwt()
     {
         $user = User::factory()->create();
 
         $jwt = $this->issueToken(
-            sub: $user->id,
-            uid: $user->id,
+            [],
+            $user->id,
+            $user->id,
         );
         
         $response = $this->withHeaders([
@@ -35,13 +45,18 @@ class JwtGuardTest extends TestCase
         $response->assertJsonPath('email', $user->email);
     }
 
-    #[DefineRoute('usesAuthRoutes')]
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_returns_unauthorized_with_invalid_jwt()
     {
         $jwt = $this->issueToken(
-            sub: 'test',
-            uid: 'test',
-            validToken: false
+            [],
+            'test',
+            'test',
+            [],
+            false
         );
         
         $response = $this->withHeaders([
@@ -51,7 +66,10 @@ class JwtGuardTest extends TestCase
         $response->assertUnauthorized();
     }
 
-    #[DefineRoute('usesAuthRoutes')]
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_returns_500_with_not_found_user_with_provided_id_using_jwt()
     {
         // set the create_user to false
@@ -59,8 +77,9 @@ class JwtGuardTest extends TestCase
         $user = User::factory()->makeOne();
 
         $jwt = $this->issueToken(
-            sub: '1',
-            uid: '1',
+            [],
+            '1',
+            '1',
         );
         
         $response = $this->withHeaders([
@@ -70,7 +89,10 @@ class JwtGuardTest extends TestCase
         $response->assertStatus(500);
     }
 
-    #[DefineRoute('usesAuthRoutes')]
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_creates_and_return_authenticated_user_by_jwt()
     {
         // set the create_user & random_password_on_creation to true
@@ -82,9 +104,10 @@ class JwtGuardTest extends TestCase
         $user = User::factory()->makeOne();
         $userId = 1;
         $jwt = $this->issueToken(
-            sub: $userId,
-            uid: $userId,
-            customClaims: [
+            [],
+            $userId,
+            $userId,
+            [
                 'name' => $user->name,
                 'email' => $user->email,
             ]
@@ -101,7 +124,10 @@ class JwtGuardTest extends TestCase
         $response->assertJsonPath('email', $user->email);
     }
 
-    #[DefineRoute('usesAuthRoutes')]
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_creates_dot_attributes_and_return_authenticated_user_by_jwt()
     {
         // set the create_user & random_password_on_creation to true
@@ -119,9 +145,10 @@ class JwtGuardTest extends TestCase
         $user = User::factory()->makeOne();
         $userId = 1;
         $jwt = $this->issueToken(
-            sub: $userId,
-            uid: $userId,
-            customClaims: [
+            [],
+            $userId,
+            $userId,
+            [
                 'employee' => [
                     'name' => $user->name,
                     'email' => $user->email,
@@ -140,7 +167,10 @@ class JwtGuardTest extends TestCase
         $response->assertJsonPath('email', $user->email);
     }
 
-    #[DefineRoute('usesAuthRoutes')]
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_creates_second_level_dot_attributes_and_return_authenticated_user_by_jwt()
     {
         // set the create_user & random_password_on_creation to true
@@ -158,9 +188,10 @@ class JwtGuardTest extends TestCase
         $user = User::factory()->makeOne();
         $userId = 1;
         $jwt = $this->issueToken(
-            sub: $userId,
-            uid: $userId,
-            customClaims: [
+            [],
+            $userId,
+            $userId,
+            [
                 'employee' => [
                     'info' => [
                         'name' => $user->name,

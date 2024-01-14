@@ -26,10 +26,11 @@ class CreateUserByJwtAction implements CreateUserActionInterface
             throw new CouldNotCreateUserException("User Provider is not supported only Eloquent User provider is supported.");
         }
 
+        $userModelClass = $userProvider->getModel();
         /**
          * @var \Illuminate\Database\Eloquent\Model
          */
-        $userModel = new ($userProvider->getModel());
+        $userModel = new $userModelClass;
 
 
         $creationAttributes = [];
