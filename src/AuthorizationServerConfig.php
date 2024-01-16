@@ -36,7 +36,7 @@ class AuthorizationServerConfig
         bool $createUser,
         string $createUserActionClass,
         array $creationClaimAttributeMap,
-        bool $randomPasswordOnCreation,
+        bool $randomPasswordOnCreation
     )
     {
         $this->publicKey = $publicKey;

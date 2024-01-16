@@ -19,39 +19,77 @@ class JwtParser
 
     private string $errorMessage = '';
 
+    private string $jwt;
+    private string $publicKey;
+    private string $idClaim;
+    private string $rolesClaim;
+    private string $algorithm = 'RS256';
+    private string $issuer = '';
+    private bool $validateIssuer = true;
+    
     public function __construct(
-        private string $jwt, 
-        private string $publicKey,
-        private string $idClaim,
-        private string $rolesClaim,
-        private string $algorithm = 'RS256',
-        private string $issuer = '',
-        private bool $validateIssuer = true
+        string $jwt, 
+        string $idClaim,
+        string $publicKey,
+        string $rolesClaim,
+        string $algorithm = 'RS256',
+        string $issuer = '',
+        bool $validateIssuer = true
         )
     {
+        $this->jwt = $jwt;
+        $this->publicKey = $publicKey;
+        $this->idClaim = $idClaim;
+        $this->rolesClaim = $rolesClaim;
+        $this->algorithm = $algorithm;
+        $this->issuer = $issuer;
+        $this->validateIssuer = true;
+
         if (!$this->validate()) {
             throw new JwtValidationException($this->errorMessage);
         }
     }
 
-    private function getAlgorthemClass(): string
+    private function getAlgorithmClass(): string
     {
-        $algorithmClass = match ($this->algorithm) {
+        $algorithmClass = null;
+        switch ($this->algorithm) {
             // Symmetric algorithms
-            'HS256' => \Lcobucci\JWT\Signer\Hmac\Sha256::class,
-            'HS384' => \Lcobucci\JWT\Signer\Hmac\Sha384::class,
-            'HS512' => \Lcobucci\JWT\Signer\Hmac\Sha512::class,
-            'BLAKE2B' => \Lcobucci\JWT\Signer\Blake2b::class,
+            case 'HS256': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Hmac\Sha256::class;
+                break;
+            case 'HS384': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Hmac\Sha384::class;
+                break;
+            case 'HS512': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Hmac\Sha512::class;
+                break;
+            case 'BLAKE2B': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Blake2b::class;
+                break;
             // Asymmetric algorithms
-            'RS256' => \Lcobucci\JWT\Signer\Rsa\Sha256::class,
-            'RS384' => \Lcobucci\JWT\Signer\Rsa\Sha384::class,
-            'RS512' => \Lcobucci\JWT\Signer\Rsa\Sha512::class,
-            'ES256' => \Lcobucci\JWT\Signer\Ecdsa\Sha256::class,
-            'ES384' => \Lcobucci\JWT\Signer\Ecdsa\Sha384::class,
-            'ES512' => \Lcobucci\JWT\Signer\Ecdsa\Sha512::class,
-            'EdDSA' => \Lcobucci\JWT\Signer\Eddsa::class,
-            default => null,
-        };
+            case 'RS256': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Rsa\Sha256::class;
+                break;
+            case 'RS384': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Rsa\Sha384::class;
+                break;
+            case 'RS512': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Rsa\Sha512::class;
+                break;
+            case 'ES256': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Ecdsa\Sha256::class;
+                break;
+            case 'ES384': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Ecdsa\Sha384::class;
+                break;
+            case 'ES512': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Ecdsa\Sha512::class;
+                break;
+            case 'EdDSA': 
+                $algorithmClass = \Lcobucci\JWT\Signer\Eddsa::class;
+                break;
+        }
 
         if (!$algorithmClass) {
             throw new JwtValidationException('Unsupproted algorithm '.$this->algorithm);
@@ -63,11 +101,12 @@ class JwtParser
     private function validate(): bool
     {        
         $key = InMemory::plainText($this->publicKey);
-        
+        $className = $this->getAlgorithmClass();
+    
         try {
             $token = (new JwtFacade())->parse(
                 $this->jwt,
-                new Constraint\SignedWith(new ($this->getAlgorthemClass()), $key),
+                new Constraint\SignedWith(new $className, $key),
                 new Constraint\StrictValidAt(
                     new FrozenClock(now()->toDateTimeImmutable())
                 )
@@ -93,16 +132,16 @@ class JwtParser
         }
 
         $this->isJwtValid = true;
-        
+
         return true;
     }
 
-    public function getId(): mixed
+    public function getId()
     {
         return $this->getClaim($this->idClaim);
     } 
 
-    public function getRoles(): mixed
+    public function getRoles()
     {
         return $this->getClaim($this->rolesClaim);
     }
@@ -110,7 +149,7 @@ class JwtParser
     /**
      * @param string $name
      */
-    public function getClaim(string $name): mixed
+    public function getClaim(string $name)
     {
         return $this->parsedJwt->claims()->get($name);
     }
