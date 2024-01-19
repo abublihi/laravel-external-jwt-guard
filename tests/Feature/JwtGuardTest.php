@@ -25,7 +25,7 @@ class JwtGuardTest extends TestCase
      * @test
      * @define-route usesAuthRoutes
      */
-    function test_it_returns_exists_authenticated_user_by_jwt()
+    function test_it_returns_authenticated_user_by_jwt()
     {
         $user = User::factory()->create();
 
@@ -33,6 +33,38 @@ class JwtGuardTest extends TestCase
             [],
             $user->id,
             $user->id,
+        );
+        
+        $response = $this->withHeaders([
+                'Authorization' => 'Bearer '.$jwt
+            ])->getJson('current-user');
+
+        $response->assertSuccessful();
+        $response->assertJsonPath('id', $user->id);
+        $response->assertJsonPath('name', $user->name);
+        $response->assertJsonPath('email', $user->email);
+    }
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_authenticated_user_by_jwt_without_iss_claim_and_disabled_issuer_validation()
+    {
+        $user = User::factory()->create();
+
+        // set the create_user & random_password_on_creation to true
+        config([
+            'externaljwtguard.authorization_servers.default.validate_issuer' => false,
+        ]);
+
+        $jwt = $this->issueToken(
+            [],
+            $user->id,
+            $user->id,
+            [],
+            true,
+            'http://invalidissuer.com'
         );
         
         $response = $this->withHeaders([
