@@ -43,7 +43,7 @@ class JwtParser
         $this->rolesClaim = $rolesClaim;
         $this->algorithm = $algorithm;
         $this->issuer = $issuer;
-        $this->validateIssuer = true;
+        $this->validateIssuer = $validateIssuer;
 
         if (!$this->validate()) {
             throw new JwtValidationException($this->errorMessage);

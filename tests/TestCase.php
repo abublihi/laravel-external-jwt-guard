@@ -103,7 +103,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
         string $sub = '1',
         string $uid = '1',
         array $customClaims = [],
-        bool $validToken = true): string
+        bool $validToken = true,
+        string $issuer = 'http://example.com'): string
     {
         $signingKeyPath = $validToken? __DIR__.'/TestKeys/private.pem' : __DIR__.'/TestKeys/other_rsa256_private_key.pem';
         $tokenBuilder = (new Builder(new JoseEncoder(), ChainedFormatter::default()));
@@ -113,7 +114,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $now   = new DateTimeImmutable();
         $token = $tokenBuilder
             // Configures the issuer (iss claim)
-            ->issuedBy('http://example.com')
+            ->issuedBy($issuer)
             // Configures the audience (aud claim)
             ->permittedFor('http://example.org')
             // Configures the subject of the token (sub claim)
