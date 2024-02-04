@@ -44,6 +44,16 @@ class JwtGuardDriver implements Guard
     }
 
     /**
+     * Get's the parsed jwt
+     * 
+     * @return JwtParser 
+     */
+    public function getParsedJwt(): JwtParser
+    {
+        return $this->parsedJwt;
+    }
+
+    /**
      * Get the currently authenticated user.
      */
     public function user()
