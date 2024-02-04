@@ -67,6 +67,24 @@ The creation setting is used to configure how will create a user if not exists i
 | random_password_on_creation | boolean (to randomly set a password attribute as a random value while creation of a user) | No |
 | creation_claim_attribute_map | array of mapping the claim (from jwt) to the attribute (your model) | No,yes if create_user=true |
 
+> NOTE: You can use your own action to create the user but you should implement the interface `Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface`
+
+```php
+'create_user' =>  env('JWT_GUARD_CREATE_USER', false),
+// you can define your own action by implementing the interface Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface
+'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class,
+// create random password for the newly created user if password attribute exists on the database table, 
+// and you set the create_user to true you should also set this to true
+'random_password_on_creation' => env('JWT_GUARD_CREATE_USER', false),
+// this will set the user data for creation from the jwt claims
+'creation_claim_attribute_map' => [
+    // jwt_claim => database_attribute
+    // 'employee.email' => 'email' // you can look for a claim using dot(.) this will get employee claim and then look for the email in employee claim
+    // 'sub' => 'id',
+    // 'name' => 'name', 
+],
+```
+
 #### Validation settings
 
 | Name | Description | Required? |
@@ -112,6 +130,73 @@ Route::middleware('auth:api-jwt')->group(function() {
         return request()->user(); // <-- will return the user which is configured
     });
 });
+```
+
+## JWT role middleware
+
+The package also comes with a role middleware that checks the roles of the JWT (User), you should configure it right first by using the config file `roles_claim` to the right roles claim which should be an **array** of roles. to use the middleware you have two options: 
+
+1. define an **alias** in `app/Http/Kernel.php` 
+2. use it directly without an alias
+
+### Defining the middleware Alias in the kernel 
+
+Go to `app/Http/Kernel.php` and add the following line
+
+> NOTE: The name of the alias could be any thing
+
+```php
+protected $middlewareAliases = [
+    // ...
+    'jwt-role' => \Abublihi\LaravelExternalJwtGuard\Middleware\CheckJwtRoles::class
+];
+```
+
+Using the middleware in the routes
+
+```php
+Route::group(['middleware' => ['auth:api-jwt' 'jwt-role:manager']], function () {
+    // this will allow any jwt with the role `manager`
+});
+```
+
+You can specify multiple roles with a | (pipe) character, which is treated as OR
+
+```php
+Route::group(['middleware' => ['auth:api-jwt' 'jwt-role:manager|super-admin']], function () {
+    // this will allow any jwt with the role `manager` or `super-admin`
+});
+```
+
+### Using the Middleware directly without defining it on the kernel
+
+
+```php
+use Abublihi\LaravelExternalJwtGuard\Middleware\CheckJwtRoles;
+
+Route::group(['middleware' => ['auth:api-jwt' CheckJwtRoles::class.':manager']], function () {
+    // this will allow any jwt with the role `manager`
+});
+```
+
+
+Example JWT with roles claim
+
+```json
+{
+  "iss": "http://example.com",
+  "aud": "http://example.org",
+  "sub": "2",
+  "jti": "4f1g23a12aa",
+  "iat": 1707071173.863238,
+  "nbf": 1707071113.863238,
+  "exp": 1707074773.863238,
+  "uid": "2",
+  "roles": [
+    "manager",
+    "super-admin"
+  ]
+}
 ```
 
 
