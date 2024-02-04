@@ -6,12 +6,13 @@ use DateTimeImmutable;
 use Illuminate\Http\Request;
 use Lcobucci\JWT\Token\Builder;
 use Lcobucci\JWT\Signer\Rsa\Sha256;
-use Abublihi\LaravelExternalJwtGuard\Tests\User;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Illuminate\Contracts\Config\Repository;
 use Lcobucci\JWT\Encoding\ChainedFormatter;
+use Abublihi\LaravelExternalJwtGuard\Tests\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Abublihi\LaravelExternalJwtGuard\Middleware\CheckJwtRoles;
 use Abublihi\LaravelExternalJwtGuard\LaravelExternalJwtGuardServiceProvider;
 
 class TestCase extends \Orchestra\Testbench\TestCase
@@ -64,7 +65,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
     }
 
     /**
-     * Define routes setup.
+     * Define a route for current user.
      *
      * @param  \Illuminate\Routing\Router  $router
      * @return void
@@ -74,6 +75,40 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $router->get('current-user', function(Request $request) {
             return auth()->user();
         })->middleware('auth:jwt-guard');
+    }
+
+    /**
+     * Define routes for checking the CheckJwtRoles.
+     *
+     * @param  \Illuminate\Routing\Router  $router
+     * @return void
+     */
+    protected function usesCheckJwtRolesRoutes($router): void
+    {
+        // check roles without auth guard
+        $router->get('get-user', function(Request $request) {
+            return auth()->user();
+        })->middleware(CheckJwtRoles::class.':user');
+        
+        // check roles with web auth guard
+        $router->get('get-auth-user', function(Request $request) {
+            return auth()->user();
+        })->middleware('auth', CheckJwtRoles::class.':user');
+                
+        // admin
+        $router->get('get-employees', function(Request $request) {
+            return auth()->user();
+        })->middleware('auth:jwt-guard', CheckJwtRoles::class.':admin');
+
+        // super-admin
+        $router->get('get-admins', function(Request $request) {
+            return auth()->user();
+        })->middleware('auth:jwt-guard', CheckJwtRoles::class.':super-admin');
+        
+        // admin or manager
+        $router->get('get-managers', function(Request $request) {
+            return auth()->user();
+        })->middleware('auth:jwt-guard', CheckJwtRoles::class.':admin|manager');
     }
 
     protected function getPackageProviders($app): array
@@ -138,7 +173,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             $token = $token->withClaim($claimKey, $claim);
         }
 
-            // Builds a new token
+        // Builds a new token
         $token = $token->getToken($algorithm, $signingKey);
 
         return $token->toString();
