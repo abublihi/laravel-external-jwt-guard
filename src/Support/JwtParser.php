@@ -145,7 +145,7 @@ class JwtParser
 
     public function getRoles()
     {
-        return $this->claims[$this->rolesClaim] ?? null;
+        return $this->getClaim($this->rolesClaim);
     }
 
     /**
