@@ -18,7 +18,7 @@ class JwtParser
     private bool $isJwtValid = false;
 
     private string $errorMessage = '';
-
+    private array $claims;
     private string $jwt;
     private string $publicKey;
     private string $idClaim;
@@ -48,6 +48,8 @@ class JwtParser
         if (!$this->validate()) {
             throw new JwtValidationException($this->errorMessage);
         }
+
+        $this->claims = \Arr::dot($this->parsedJwt->claims()->all());
     }
 
     private function getAlgorithmClass(): string
@@ -138,12 +140,12 @@ class JwtParser
 
     public function getId()
     {
-        return $this->getClaim($this->idClaim);
-    } 
+        return $this->claims[$this->idClaim] ?? null;
+    }
 
     public function getRoles()
     {
-        return $this->getClaim($this->rolesClaim);
+        return $this->claims[$this->rolesClaim] ?? null;
     }
 
     /**
