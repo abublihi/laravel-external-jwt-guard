@@ -26,9 +26,9 @@ class JwtParser
     private string $algorithm = 'RS256';
     private string $issuer = '';
     private bool $validateIssuer = true;
-
+    
     public function __construct(
-        string $jwt,
+        string $jwt, 
         string $idClaim,
         string $publicKey,
         string $rolesClaim,
@@ -57,38 +57,38 @@ class JwtParser
         $algorithmClass = null;
         switch ($this->algorithm) {
             // Symmetric algorithms
-            case 'HS256':
+            case 'HS256': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Hmac\Sha256::class;
                 break;
-            case 'HS384':
+            case 'HS384': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Hmac\Sha384::class;
                 break;
-            case 'HS512':
+            case 'HS512': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Hmac\Sha512::class;
                 break;
-            case 'BLAKE2B':
+            case 'BLAKE2B': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Blake2b::class;
                 break;
             // Asymmetric algorithms
-            case 'RS256':
+            case 'RS256': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Rsa\Sha256::class;
                 break;
-            case 'RS384':
+            case 'RS384': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Rsa\Sha384::class;
                 break;
-            case 'RS512':
+            case 'RS512': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Rsa\Sha512::class;
                 break;
-            case 'ES256':
+            case 'ES256': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Ecdsa\Sha256::class;
                 break;
-            case 'ES384':
+            case 'ES384': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Ecdsa\Sha384::class;
                 break;
-            case 'ES512':
+            case 'ES512': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Ecdsa\Sha512::class;
                 break;
-            case 'EdDSA':
+            case 'EdDSA': 
                 $algorithmClass = \Lcobucci\JWT\Signer\Eddsa::class;
                 break;
         }
@@ -101,10 +101,10 @@ class JwtParser
     }
 
     private function validate(): bool
-    {
+    {        
         $key = InMemory::plainText($this->publicKey);
         $className = $this->getAlgorithmClass();
-
+    
         try {
             $token = (new JwtFacade())->parse(
                 $this->jwt,
@@ -117,7 +117,7 @@ class JwtParser
             $this->errorMessage = $e->getMessage();
             return false;
         }
-
+        
         $this->parsedJwt = $token;
 
         if ($this->validateIssuer) {
