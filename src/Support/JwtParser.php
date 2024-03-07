@@ -19,7 +19,7 @@ class JwtParser
 
     private string $errorMessage = '';
     private array $claims;
-    private string|null $jwt = null;
+    private ?string $jwt;
     private string $publicKey;
     private string $idClaim;
     private string $rolesClaim;
@@ -28,7 +28,7 @@ class JwtParser
     private bool $validateIssuer = true;
     
     public function __construct(
-        string|null $jwt,
+        ?string $jwt,
         string $idClaim,
         string $publicKey,
         string $rolesClaim,
