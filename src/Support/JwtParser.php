@@ -19,7 +19,7 @@ class JwtParser
 
     private string $errorMessage = '';
     private array $claims;
-    private string $jwt;
+    private string|null $jwt = null;
     private string $publicKey;
     private string $idClaim;
     private string $rolesClaim;
@@ -28,7 +28,7 @@ class JwtParser
     private bool $validateIssuer = true;
     
     public function __construct(
-        string $jwt, 
+        string|null $jwt,
         string $idClaim,
         string $publicKey,
         string $rolesClaim,
@@ -45,6 +45,10 @@ class JwtParser
         $this->issuer = $issuer;
         $this->validateIssuer = $validateIssuer;
 
+        if (!$jwt) {
+            return;
+        }
+        
         if (!$this->validate()) {
             throw new JwtValidationException($this->errorMessage);
         }
