@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Abublihi\LaravelExternalJwtGuard\Support\JwtParser;
 use Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface;
+use Abublihi\LaravelExternalJwtGuard\Exceptions\JwtValidationException;
 use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindUserWithProvidedIdException;
 
 class JwtGuardDriver implements Guard
