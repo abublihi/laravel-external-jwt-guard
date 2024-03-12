@@ -102,6 +102,17 @@ class JwtGuardTest extends TestCase
      * @test
      * @define-route usesAuthRoutes
      */
+    function test_it_returns_unauthorized_without_jwt_header()
+    {   
+        $response = $this->getJson('current-user');
+
+        $response->assertUnauthorized();
+    }
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
     function test_it_returns_500_with_not_found_user_with_provided_id_using_jwt()
     {
         // set the create_user to false
