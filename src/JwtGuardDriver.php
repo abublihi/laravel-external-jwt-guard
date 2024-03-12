@@ -32,8 +32,14 @@ class JwtGuardDriver implements Guard
 
     private function parseJwt(): JwtParser
     {
+        $token = $this->request->bearerToken();
+        
+        if (!$token) {
+            throw new JwtValidationException('no bearer token is provided');
+        }
+
         return new JwtParser(
-            $this->request->bearerToken(),
+            $token,
             $this->authorizationServerConfig->idClaim,
             $this->authorizationServerConfig->publicKey,
             $this->authorizationServerConfig->roleClaim,
