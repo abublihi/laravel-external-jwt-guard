@@ -93,9 +93,10 @@ class JwtGuardDriver implements Guard
             );
         }
 
-        if (!$user) {
-            throw new CouldNotFindUserWithProvidedIdException("id_attribute: {$this->authorizationServerConfig->idAttribute}, auth server id: {$this->parsedJwt->getId()}");
-        }
+        // Do not throw an exception, as laravel will return unauthorized with status code 401 which is more suitable
+        // if (!$user) {
+        //     throw new CouldNotFindUserWithProvidedIdException("id_attribute: {$this->authorizationServerConfig->idAttribute}, auth server id: {$this->parsedJwt->getId()}");
+        // }
 
         return $this->user = $user;
     }
