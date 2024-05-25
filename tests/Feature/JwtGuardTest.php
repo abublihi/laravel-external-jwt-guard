@@ -113,11 +113,10 @@ class JwtGuardTest extends TestCase
      * @test
      * @define-route usesAuthRoutes
      */
-    function test_it_returns_500_with_not_found_user_with_provided_id_using_jwt()
+    function test_it_returns_401_when_not_found_the_user_with_provided_id_using_jwt()
     {
         // set the create_user to false
         config(['externaljwtguard.authorization_servers.default.create_user' => false]);
-        $user = User::factory()->makeOne();
 
         $jwt = $this->issueToken(
             [],
@@ -129,7 +128,7 @@ class JwtGuardTest extends TestCase
                 'Authorization' => 'Bearer '.$jwt
             ])->getJson('current-user');
 
-        $response->assertStatus(500);
+        $response->assertStatus(401);
     }
 
     /**
