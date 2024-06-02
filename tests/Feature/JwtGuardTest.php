@@ -3,16 +3,12 @@
 namespace Abublihi\LaravelExternalJwtGuard\Tests\Feature;
 
 use PHPUnit\Util\Test;
-use Illuminate\Support\Facades\Auth;
-use Orchestra\Testbench\Attributes\DefineRoute;
 use Abublihi\LaravelExternalJwtGuard\Tests\User;
-use Orchestra\Testbench\Attributes\WithMigration;
-use Abublihi\LaravelExternalJwtGuard\JwtGuardDriver;
 use Abublihi\LaravelExternalJwtGuard\Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Abublihi\LaravelExternalJwtGuard\Support\JwtParser;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
-use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindUserWithProvidedIdException;
+use Abublihi\LaravelExternalJwtGuard\AuthorizationServerConfig;
+use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindAuthorizationServerConfig;
 
 /**
  * @withMigrations
@@ -75,6 +71,44 @@ class JwtGuardTest extends TestCase
         $response->assertJsonPath('id', $user->id);
         $response->assertJsonPath('name', $user->name);
         $response->assertJsonPath('email', $user->email);
+    }
+
+     /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_return_server_error_when_no_configurations_exists()
+    {
+        config(['externaljwtguard.authorization_servers.default' => null]);
+
+        $jwt = $this->issueToken(
+            [],
+            'test',
+            'test',
+            [],
+            false
+        );
+
+        $response = $this->withHeaders([
+                'Authorization' => 'Bearer '.$jwt
+            ])->getJson('current-user');
+
+        $response->assertStatus(500);
+        $response->assertSeeText('Server Error');
+    }
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_throws_exception_when_no_configurations_exists()
+    {
+        config(['externaljwtguard.authorization_servers.default' => null]);
+
+        $this->expectException(CouldNotFindAuthorizationServerConfig::class);
+        $this->expectExceptionMessage('could not found authorization server config with auth_server_key: default');
+
+        AuthorizationServerConfig::buildFromConfigKey('default');
     }
 
     /**
