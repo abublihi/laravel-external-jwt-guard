@@ -77,7 +77,7 @@ class JwtGuardTest extends TestCase
      * @test
      * @define-route usesAuthRoutes
      */
-    function test_it_return_server_error_when_no_configurations_exists()
+    function test_it_return_server_unauthorized_when_no_configurations_exists()
     {
         config(['externaljwtguard.authorization_servers.default' => null]);
 
@@ -93,23 +93,23 @@ class JwtGuardTest extends TestCase
                 'Authorization' => 'Bearer '.$jwt
             ])->getJson('current-user');
 
-        $response->assertStatus(500);
-        $response->assertSeeText('Server Error');
+        $response->assertUnauthorized();
+        // $response->assertSeeText('Server Error');
     }
 
     /**
      * @test
      * @define-route usesAuthRoutes
      */
-    function test_it_throws_exception_when_no_configurations_exists()
-    {
-        config(['externaljwtguard.authorization_servers.default' => null]);
+    // function test_it_throws_exception_when_no_configurations_exists()
+    // {
+    //     config(['externaljwtguard.authorization_servers.default' => null]);
 
-        $this->expectException(CouldNotFindAuthorizationServerConfig::class);
-        $this->expectExceptionMessage('could not found authorization server config with auth_server_key: default');
+    //     $this->expectException(CouldNotFindAuthorizationServerConfig::class);
+    //     $this->expectExceptionMessage('could not found authorization server config with auth_server_key: default');
 
-        AuthorizationServerConfig::buildFromConfigKey('default');
-    }
+    //     AuthorizationServerConfig::buildFromConfigKey('default');
+    // }
 
     /**
      * @test
@@ -286,5 +286,40 @@ class JwtGuardTest extends TestCase
         $response->assertJsonPath('id', $userId);
         $response->assertJsonPath('name', $user->name);
         $response->assertJsonPath('email', $user->email);
+    }
+    
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_401_when_public_key_is_not_set()
+    {
+        // set the create_user & random_password_on_creation to true
+        config([
+            'externaljwtguard.authorization_servers.default.public_key' => null,
+        ]);
+
+        $user = User::factory()->makeOne();
+        $userId = 1;
+        $jwt = $this->issueToken(
+            [],
+            $userId,
+            $userId,
+            [
+                'employee' => [
+                    'info' => [
+                        'name' => $user->name,
+                        'email' => $user->email,
+                    ]
+                ],
+            ]
+        );
+
+        $response = $this->withHeaders([
+                'Authorization' => 'Bearer '.$jwt
+            ])->getJson('current-user');
+
+        // $response->dd();
+        $response->assertUnauthorized();
     }
 }

@@ -16,8 +16,8 @@ class JwtGuardDriver implements Guard
     use GuardHelpers;
 
     private Request $request;
-    private AuthorizationServerConfig $authorizationServerConfig;
-    private JwtParser $parsedJwt;
+    private AuthorizationServerConfig|null $authorizationServerConfig;
+    private JwtParser|null $parsedJwt;
 
     public function __construct(
         UserProvider $provider,
@@ -31,12 +31,12 @@ class JwtGuardDriver implements Guard
         $this->parsedJwt = $this->parseJwt();
     }
 
-    private function parseJwt(): JwtParser
+    private function parseJwt(): JwtParser|null
     {
         $token = $this->request->bearerToken();
         
-        if (!$token) {
-            throw new JwtValidationException('no bearer token is provided');
+        if (!$token || !$this->authorizationServerConfig) {
+            return null;
         }
 
         return new JwtParser(
@@ -55,7 +55,7 @@ class JwtGuardDriver implements Guard
      * 
      * @return JwtParser 
      */
-    public function getParsedJwt(): JwtParser
+    public function getParsedJwt(): JwtParser|null
     {
         return $this->parsedJwt;
     }
@@ -65,6 +65,10 @@ class JwtGuardDriver implements Guard
      */
     public function user()
     {
+        if (!$this->authorizationServerConfig || !$this->parsedJwt) {
+            return null;
+        }
+
         // If we've already retrieved the user for the current request we can just
         // return it back immediately. We do not want to fetch the user data on
         // every call to this method because that would be tremendously slow.
@@ -92,11 +96,6 @@ class JwtGuardDriver implements Guard
                 $this->authorizationServerConfig
             );
         }
-
-        // Do not throw an exception, as laravel will return unauthorized with status code 401 which is more suitable
-        // if (!$user) {
-        //     throw new CouldNotFindUserWithProvidedIdException("id_attribute: {$this->authorizationServerConfig->idAttribute}, auth server id: {$this->parsedJwt->getId()}");
-        // }
 
         return $this->user = $user;
     }

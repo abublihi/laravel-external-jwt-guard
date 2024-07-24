@@ -101,8 +101,14 @@ class JwtParser
     }
 
     private function validate(): bool
-    {        
-        $key = InMemory::plainText($this->publicKey);
+    {       
+        try {
+            $key = InMemory::plainText($this->publicKey);
+        } catch (\Exception $e) {
+            $this->errorMessage = $e->getMessage();
+            return false;
+        }
+        
         $className = $this->getAlgorithmClass();
     
         try {
