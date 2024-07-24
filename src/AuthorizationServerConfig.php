@@ -55,23 +55,24 @@ class AuthorizationServerConfig
     /**
      * @return self
      */
-    public static function buildFromConfigKey(string $authorizationServerKey): self
+    public static function buildFromConfigKey(string $authorizationServerKey): self|null
     {
         $authServerConfig = config("externaljwtguard.authorization_servers.$authorizationServerKey");
         // loading config from config file
         if (is_null($authServerConfig)) {
-            throw new CouldNotFindAuthorizationServerConfig('could not found authorization server config with auth_server_key: '.$authorizationServerKey);
+            return null;
+            // throw new CouldNotFindAuthorizationServerConfig('could not found authorization server config with auth_server_key: '.$authorizationServerKey);
         }
 
         return new self(
-            $authServerConfig['public_key'],
+            $authServerConfig['public_key'] ?? '',
             $authServerConfig['id_claim'],
             $authServerConfig['roles_claim'],
             $authServerConfig['id_attribute'],
-            $authServerConfig['signing_algorithm'],
-            $authServerConfig['validate_issuer'],
-            $authServerConfig['issuer'],
-            $authServerConfig['create_user'],
+            $authServerConfig['signing_algorithm'] ?? 'RS256',
+            $authServerConfig['validate_issuer'] ?? true,
+            $authServerConfig['issuer'] ?? '',
+            $authServerConfig['create_user'] ?? false,
             $authServerConfig['create_user_action_class'],
             $authServerConfig['creation_claim_attribute_map'],
             $authServerConfig['random_password_on_creation'],
