@@ -66,7 +66,7 @@ class JwtGuardDriver implements Guard
     public function user()
     {
         if (!$this->authorizationServerConfig || !$this->parsedJwt) {
-            return null;
+            return $this->user;
         }
 
         // If we've already retrieved the user for the current request we can just
