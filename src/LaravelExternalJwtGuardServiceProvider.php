@@ -27,7 +27,7 @@ class LaravelExternalJwtGuardServiceProvider extends ServiceProvider
     public function register()
     {
         Auth::extend('external-jwt-auth', function ($app, string $name, array $config) { 
-            return new JwtGuardDriver(Auth::createUserProvider($config['provider']), $app->make('request'), @$config['auth_server_key']?: 'default');
+            return new JwtGuardDriver(Auth::createUserProvider($config['provider']), @$config['auth_server_key']?: 'default');
         });
         
         // Automatically apply the package configuration

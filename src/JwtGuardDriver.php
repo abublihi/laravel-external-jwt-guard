@@ -15,17 +15,14 @@ class JwtGuardDriver implements Guard
 {
     use GuardHelpers;
 
-    private Request $request;
     private AuthorizationServerConfig|null $authorizationServerConfig;
     private JwtParser|null $parsedJwt;
 
     public function __construct(
         UserProvider $provider,
-        Request $request,
         string $authorizationServerKey = 'default'
     ) {
         $this->provider = $provider;
-        $this->request = $request;
         $this->authorizationServerConfig = AuthorizationServerConfig::buildFromConfigKey($authorizationServerKey);
 
         $this->parsedJwt = $this->parseJwt();
@@ -33,7 +30,7 @@ class JwtGuardDriver implements Guard
 
     private function parseJwt(): JwtParser|null
     {
-        $token = $this->request->bearerToken();
+        $token = request()->bearerToken();
         
         if (!$token || !$this->authorizationServerConfig) {
             return null;
