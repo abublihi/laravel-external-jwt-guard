@@ -62,6 +62,8 @@ class JwtGuardDriver implements Guard
      */
     public function user()
     {
+        $this->parsedJwt = $this->parsedJwt ?? $this->parseJwt();
+
         if (!$this->authorizationServerConfig || !$this->parsedJwt) {
             return $this->user;
         }
