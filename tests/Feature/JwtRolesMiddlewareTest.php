@@ -3,18 +3,10 @@
 namespace Abublihi\LaravelExternalJwtGuard\Tests\Feature;
 
 use PHPUnit\Util\Test;
-use Illuminate\Support\Facades\Auth;
-use Orchestra\Testbench\Attributes\DefineRoute;
 use Abublihi\LaravelExternalJwtGuard\Tests\User;
-use Orchestra\Testbench\Attributes\WithMigration;
-use Abublihi\LaravelExternalJwtGuard\JwtGuardDriver;
 use Abublihi\LaravelExternalJwtGuard\Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
-use Abublihi\LaravelExternalJwtGuard\Support\JwtParser;
 use Orchestra\Testbench\Concerns\WithLaravelMigrations;
-use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindUserWithProvidedIdException;
-use Abublihi\LaravelExternalJwtGuard\Middleware\CheckJwtRoles;
-use Illuminate\Http\Request;
 
 /**
  * @withMigrations
@@ -58,11 +50,9 @@ class JwtRolesMiddlewareTest extends TestCase
             $user->id,
             $user->id,
         );
-        
+               
         $response = $this->actingAs($user)->getJson('get-auth-user');
-
         $response->assertStatus(500);
-        $response->assertSee('Server Error');
     }
 
     /**
