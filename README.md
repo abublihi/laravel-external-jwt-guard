@@ -230,8 +230,6 @@ Example JWT with roles claim
 }
 ```
 
-### Using other authorization server  
-
 ### Testing
 
 ```bash

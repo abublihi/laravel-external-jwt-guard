@@ -94,10 +94,6 @@ class JwtGuardDriver implements Guard
             );
         }
 
-        if ($user) {
-            event(new AuthenticatedUsingJWT($user));
-        }
-
         return $this->user = $user;
     }
 

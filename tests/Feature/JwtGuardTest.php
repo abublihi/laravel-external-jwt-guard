@@ -2,9 +2,7 @@
 
 namespace Abublihi\LaravelExternalJwtGuard\Tests\Feature;
 
-use Abublihi\LaravelExternalJwtGuard\Events\AuthenticatedUsingJWT;
 use PHPUnit\Util\Test;
-use Illuminate\Support\Facades\Event;
 use Abublihi\LaravelExternalJwtGuard\Tests\User;
 use Abublihi\LaravelExternalJwtGuard\Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -58,36 +56,6 @@ class JwtGuardTest extends TestCase
         $response = $this->withHeaders([
                 'Authorization' => 'Bearer '.$jwt
             ])->getJson('current-admin');
-
-        $response->assertSuccessful();
-        $response->assertJsonPath('id', $user->id);
-        $response->assertJsonPath('name', $user->name);
-        $response->assertJsonPath('email', $user->email);
-    }
-
-    /**
-     * @test
-     * @define-route usesAuthRoutes
-     */
-    function test_it_event__authenticated_using_jwt_is_dispatched()
-    {
-        Event::fake();
-
-        $user = User::factory()->create();
-
-        $jwt = $this->issueToken(
-            [],
-            $user->id,
-            $user->id,
-        );
-        
-        $response = $this->withHeaders([
-                'Authorization' => 'Bearer '.$jwt
-            ])->getJson('current-user');
-
-        Event::assertDispatched(AuthenticatedUsingJWT::class, function(AuthenticatedUsingJWT $event) use ($user) {
-            return $event->user->id == $user->id;
-        });
 
         $response->assertSuccessful();
         $response->assertJsonPath('id', $user->id);
