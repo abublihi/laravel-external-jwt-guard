@@ -29,6 +29,34 @@ The package is very simple but also powerful when it comes to customization, Aft
 
 ### Configure your Authorization server
 
+```php
+
+<?php
+
+return [
+    'authorization_servers' => [
+        'default' => [
+            /* Identification settings */
+            'id_claim' => env('JWT_GUARD_ID_CLAIM', 'sub'),
+            'roles_claim' => env('JWT_GUARD_ROLES_CLAIM', 'roles'),
+            'id_attribute' => env('JWT_GUARD_ID_ATTRIBUTE', 'id'),
+
+            /* Creation setting */
+            'create_user' =>  env('JWT_GUARD_CREATE_USER', false),
+            'create_user_action_class' => null,
+            
+            /* Validation settings */
+            'issuer' => '',
+            'validate_issuer' => true,
+            'public_key' => env('JWT_GUARD_AUTH_SERVER_PUBLIC_KEY'), // if RSA, make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
+            'signing_algorithm' => env('JWT_GUARD_AUTH_SIGN_ALG', 'RS256'),
+        ],
+        // you could add as many as you want of the authorization servers by duplicating the configurations above ^^
+        'admin' => [ 'id_claim' => 'sub', ..... ]
+    ],
+];
+
+```
 please head to configuration file `config/externaljwtguard.php`, the configurations is separated in three main Sections: 
 
 - Identification settings 
@@ -63,26 +91,14 @@ The creation setting is used to configure how will create a user if not exists i
 | Name | Description | Required? |
 | ----------- | ----------- | ----------- |
 | create_user | boolean (to disable or enable the creation of the user if not exists) | No |
-| create_user_action_class | An action class for creation of a user (default: \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class) | No, yes if create_user=true |
-| random_password_on_creation | boolean (to randomly set a password attribute as a random value while creation of a user) | No |
-| creation_claim_attribute_map | array of mapping the claim (from jwt) to the attribute (your model) | No,yes if create_user=true |
+| create_user_action_class | An action class for creation of a user (default:  null) | No, yes if create_user=true |
 
-> NOTE: You can use your own action to create the user but you should implement the interface `Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface`
+> NOTE: You have to make your own action to create the user that should implement the interface `Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface`
 
 ```php
 'create_user' =>  env('JWT_GUARD_CREATE_USER', false),
 // you can define your own action by implementing the interface Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface
-'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class,
-// create random password for the newly created user if password attribute exists on the database table, 
-// and you set the create_user to true you should also set this to true
-'random_password_on_creation' => env('JWT_GUARD_CREATE_USER', false),
-// this will set the user data for creation from the jwt claims
-'creation_claim_attribute_map' => [
-    // jwt_claim => database_attribute
-    // 'employee.email' => 'email' // you can look for a claim using dot(.) this will get employee claim and then look for the email in employee claim
-    // 'sub' => 'id',
-    // 'name' => 'name', 
-],
+'create_user_action_class' => null,
 ```
 
 #### Validation settings
@@ -105,8 +121,7 @@ The creation setting is used to configure how will create a user if not exists i
 
 After we have configured our Authorization server next we have to configure the our guard in `config/auth.php`
 
-in the Guards you can add/modify the guards where you want to use JWT as authentication guard by setting the driver to `external-jwt-auth` .
-
+in the Guards you can add/modify the guards where you want to use JWT as authentication guard by setting the driver to `external-jwt-auth` . We have a custom attribute which is `auth_server_key` that indcates the authroization server key, it's by default set to `default` .
 ```php
 'guards' => [
     .
@@ -114,6 +129,13 @@ in the Guards you can add/modify the guards where you want to use JWT as authent
     'api-jwt' => [
         'driver' => 'external-jwt-auth', // <-- here you have to set the drive to `external-jwt-auth`
         'provider' => 'users',
+    ],
+    
+    // you can set the authorization server key as seen below 
+    'api-jwt-admin' => [
+        'driver' => 'external-jwt-auth', // <-- here you have to set the drive to `external-jwt-auth`
+        'provider' => 'users',
+        'auth_server_key' => 'admin', // the authorization key for admin 
     ],
     .
     .
@@ -179,6 +201,15 @@ Route::group(['middleware' => ['auth:api-jwt' CheckJwtRoles::class.':manager']],
 });
 ```
 
+You can specify multiple roles with a | (pipe) character, which is treated as OR
+
+```php
+// with OR operator 
+Route::group(['middleware' => ['auth:api-jwt' CheckJwtRoles::class.':manager|super-admin']], function () {
+    // this will allow any jwt with the role `manager`
+});
+```
+
 
 Example JWT with roles claim
 
@@ -199,6 +230,7 @@ Example JWT with roles claim
 }
 ```
 
+### Using other authorization server  
 
 ### Testing
 
