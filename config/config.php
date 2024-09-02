@@ -9,7 +9,7 @@ return [
              |--------------------------------------------------------------------------
              */
             
-            'id_claim' => env('JWT_GUARD_ID_CLAIM', 'sub'),
+            'id_claim' => env('JWT_GUARD_ID_CLAIM', 'sub'), // sometimes it's called `token_principal_attribute`
             'roles_claim' => env('JWT_GUARD_ROLES_CLAIM', 'roles'),
             
             /**
@@ -32,23 +32,14 @@ return [
             /*
              |--------------------------------------------------------------------------
              | Creation setting:
+             | if you want to create user if not exists on local database
              |--------------------------------------------------------------------------
              */
 
             'create_user' =>  env('JWT_GUARD_CREATE_USER', false),
-            // you can define your own action by implementing the interface Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface
-            'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class,
-            // create random password for the newly created user if password attribute exists on the database table, 
-            // and you set the create_user to true you should also set this to true
-            'random_password_on_creation' => env('JWT_GUARD_CREATE_USER', false),
-            // this will set the user data for creation from the jwt claims
-            'creation_claim_attribute_map' => [
-                // jwt_claim => database_attribute
-                // 'employee.email' => 'email' // you can look for a claim using dot(.) this will get employee claim and then look for the email in employee claim
-                // 'sub' => 'id',
-                // 'name' => 'name', 
-            ],
-
+            // you have to define your own action by implementing the interface Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface
+            'create_user_action_class' => null,
+            
             /*
              |--------------------------------------------------------------------------
              | Validation settings:
