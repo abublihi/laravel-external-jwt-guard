@@ -2,7 +2,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/abublihi/laravel-external-jwt-guard.svg?style=flat-square)](https://packagist.org/packages/abublihi/laravel-external-jwt-guard)
 [![Total Downloads](https://img.shields.io/packagist/dt/abublihi/laravel-external-jwt-guard.svg?style=flat-square)](https://packagist.org/packages/abublihi/laravel-external-jwt-guard)
-![GitHub Actions](https://github.com/abublihi/laravel-external-jwt-guard/actions/workflows/main.yml/badge.svg)
+![Tests](https://github.com/abublihi/laravel-external-jwt-guard/actions/workflows/run-tests.yml/badge.svg)
 
 This package provides a simple custom authentication guard for Laravel using an external JWT provided by an OAuth server or Any type of SSO that uses a JWT. Below a figure describe the flow.
 
