@@ -2,14 +2,12 @@
 
 namespace Abublihi\LaravelExternalJwtGuard;
 
-use Illuminate\Http\Request;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Abublihi\LaravelExternalJwtGuard\Support\JwtParser;
+use Abublihi\LaravelExternalJwtGuard\Events\AuthenticatedUsingJWT;
 use Abublihi\LaravelExternalJwtGuard\Interfaces\CreateUserActionInterface;
-use Abublihi\LaravelExternalJwtGuard\Exceptions\JwtValidationException;
-use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindUserWithProvidedIdException;
 
 class JwtGuardDriver implements Guard
 {
@@ -25,7 +23,7 @@ class JwtGuardDriver implements Guard
         $this->provider = $provider;
         $this->authorizationServerConfig = AuthorizationServerConfig::buildFromConfigKey($authorizationServerKey);
 
-        $this->parsedJwt = $this->parseJwt();
+        $this->parseJwt();
     }
 
     private function parseJwt(): JwtParser|null
@@ -33,10 +31,10 @@ class JwtGuardDriver implements Guard
         $token = request()->bearerToken();
         
         if (!$token || !$this->authorizationServerConfig) {
-            return null;
+            return $this->parsedJwt = null;
         }
 
-        return new JwtParser(
+        return $this->parsedJwt = new JwtParser(
             $token,
             $this->authorizationServerConfig->idClaim,
             $this->authorizationServerConfig->publicKey,
@@ -54,7 +52,7 @@ class JwtGuardDriver implements Guard
      */
     public function getParsedJwt(): JwtParser|null
     {
-        return $this->parsedJwt;
+        return $this->parsedJwt ?? $this->parseJwt();
     }
 
     /**
@@ -62,7 +60,7 @@ class JwtGuardDriver implements Guard
      */
     public function user()
     {
-        $this->parsedJwt = $this->parsedJwt ?? $this->parseJwt();
+        $this->getParsedJwt();
 
         if (!$this->authorizationServerConfig || !$this->parsedJwt) {
             return $this->user;
@@ -96,6 +94,10 @@ class JwtGuardDriver implements Guard
             );
         }
 
+        if ($user) {
+            event(new AuthenticatedUsingJWT($user));
+        }
+
         return $this->user = $user;
     }
 
@@ -104,6 +106,6 @@ class JwtGuardDriver implements Guard
      */
     public function validate(array $credentials = [])
     {
-        return $this->parsedJwt->getIsJwtValid();
+        return $this->getParsedJwt()?->getIsJwtValid() ?? false;
     }
 }
