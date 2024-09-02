@@ -18,14 +18,6 @@ use Abublihi\LaravelExternalJwtGuard\LaravelExternalJwtGuardServiceProvider;
 class TestCase extends \Orchestra\Testbench\TestCase
 {
     use RefreshDatabase;
-    
-    public function setUp(): void
-    {
-        parent::setUp();
-        // $this->afterApplicationCreated(function () {
-        //     // Code after application created.
-        // });
-    }
 
     /**
      * Define environment setup.
@@ -35,33 +27,59 @@ class TestCase extends \Orchestra\Testbench\TestCase
      */
     protected function defineEnvironment($app): void
     {
-        tap($app['config'], function (Repository $config) {
-            $config->set('auth.providers.users.model', User::class);
+        $app['config']->set('auth.providers.users.model', User::class);
 
-            $config->set('auth.guards.jwt-guard', [
-                'driver' => 'external-jwt-auth',
-                'provider' => 'users',
-            ]);
+        $app['config']->set('auth.guards.jwt-guard', [
+            'driver' => 'external-jwt-auth',
+            'provider' => 'users',
+        ]);
 
-            $config->set('externaljwtguard.authorization_servers.default', [
-                'id_claim' => 'sub',
-                'roles_claim' => 'roles',
-                'id_attribute' => 'id',
-                'create_user' => false, // it's not recommended  
-                'random_password_on_creation' => false,
-                'creation_claim_attribute_map' => [
-                    // jwt claim => database attribute
-                    'sub' => 'id',
-                    'name' => 'name', 
-                    'email' => 'email', 
-                ],
-                'issuer' => 'http://example.com',
-                'validate_issuer' => true,
-                'public_key' => $this->getPublicKey(), // if RSA make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
-                'signing_algorithm' => 'RS256',
-                'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Support\CreateUserByJwtAction::class,
-            ]);
-        });
+        $app['config']->set('auth.guards.jwt-guard-admin', [
+            'driver' => 'external-jwt-auth',
+            'provider' => 'users',
+            'auth_server_key' => 'admin',
+        ]);
+
+        $app['config']->set('externaljwtguard.authorization_servers.default', [
+            'id_claim' => 'sub',
+            'roles_claim' => 'roles',
+            'id_attribute' => 'id',
+            'create_user' => false, // it's not recommended  
+            'random_password_on_creation' => false,
+            'creation_claim_attribute_map' => [
+                // jwt claim => database attribute
+                'sub' => 'id',
+                'name' => 'name', 
+                'email' => 'email', 
+            ],
+            'issuer' => 'http://example.com',
+            'validate_issuer' => true,
+            'public_key' => $this->getPublicKey(), // if RSA make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
+            'signing_algorithm' => 'RS256',
+            'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Tests\CreateUserByJwtAction::class,
+        ]);
+        
+        $app['config']->set('externaljwtguard.authorization_servers.admin', [
+            'id_claim' => 'sub',
+            'roles_claim' => 'roles',
+            'id_attribute' => 'id',
+            'create_user' => false, // it's not recommended  
+            'random_password_on_creation' => false,
+            'creation_claim_attribute_map' => [
+                // jwt claim => database attribute
+                'sub' => 'id',
+                'name' => 'name', 
+                'email' => 'email', 
+            ],
+            'issuer' => 'http://example.com',
+            'validate_issuer' => true,
+            'public_key' => $this->getPublicKey(), // if RSA make sure it's start with -----BEGIN PUBLIC KEY----- and ends with -----END PUBLIC KEY-----
+            'signing_algorithm' => 'RS256',
+            'create_user_action_class' => \Abublihi\LaravelExternalJwtGuard\Tests\CreateUserByJwtAction::class,
+        ]);
+        // tap($app['config'], function (Repository $config) {
+            
+        // });
     }
 
     /**
@@ -75,6 +93,10 @@ class TestCase extends \Orchestra\Testbench\TestCase
         $router->get('current-user', function(Request $request) {
             return auth()->user();
         })->middleware('auth:jwt-guard');
+        
+        $router->get('current-admin', function(Request $request) {
+            return auth()->user();
+        })->middleware('auth:jwt-guard-admin');
     }
 
     /**
@@ -139,6 +161,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
         string $uid = '1',
         array $customClaims = [],
         bool $validToken = true,
+        bool $expiredToken = false,
         string $issuer = 'http://example.com'): string
     {
         $signingKeyPath = $validToken? __DIR__.'/TestKeys/private.pem' : __DIR__.'/TestKeys/other_rsa256_private_key.pem';
@@ -161,7 +184,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
             // Configures the time that the token can be used (nbf claim)
             ->canOnlyBeUsedAfter($now->modify('-1 minute'))
             // Configures the expiration time of the token (exp claim)
-            ->expiresAt($now->modify('+1 hour'))
+            ->expiresAt($expiredToken? $now->modify('-2 minute') : $now->modify('+1 hour'))
             // Configures a new claim, called "uid"
             ->withClaim('uid', $uid)
             // add roles claim
