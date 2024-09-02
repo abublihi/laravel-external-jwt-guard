@@ -2,8 +2,6 @@
 
 namespace Abublihi\LaravelExternalJwtGuard;
 
-use Abublihi\LaravelExternalJwtGuard\Exceptions\CouldNotFindAuthorizationServerConfig;
-
 class AuthorizationServerConfig
 {
     public string $publicKey;
@@ -15,15 +13,9 @@ class AuthorizationServerConfig
     public string $issuer;
     public bool $createUser;
     public string $createUserActionClass;
-    /**
-     * @var array
-     */
-    public array $creationClaimAttributeMap;
-    public bool $randomPasswordOnCreation;
-
+    
     /** 
      * @param array $creationClaimAttributeMap
-     * @throws CouldNotFindAuthorizationServerConfig
      */
     public function __construct(
         string $publicKey,
@@ -35,8 +27,6 @@ class AuthorizationServerConfig
         string $issuer,
         bool $createUser,
         string $createUserActionClass,
-        array $creationClaimAttributeMap,
-        bool $randomPasswordOnCreation
     )
     {
         $this->publicKey = $publicKey;
@@ -48,8 +38,6 @@ class AuthorizationServerConfig
         $this->issuer = $issuer;
         $this->createUser = $createUser;
         $this->createUserActionClass = $createUserActionClass;
-        $this->creationClaimAttributeMap = $creationClaimAttributeMap;
-        $this->randomPasswordOnCreation = $randomPasswordOnCreation;
     }
     
     /**
@@ -61,7 +49,6 @@ class AuthorizationServerConfig
         // loading config from config file
         if (is_null($authServerConfig)) {
             return null;
-            // throw new CouldNotFindAuthorizationServerConfig('could not found authorization server config with auth_server_key: '.$authorizationServerKey);
         }
 
         return new self(
@@ -73,9 +60,7 @@ class AuthorizationServerConfig
             $authServerConfig['validate_issuer'] ?? true,
             $authServerConfig['issuer'] ?? '',
             $authServerConfig['create_user'] ?? false,
-            $authServerConfig['create_user_action_class'],
-            $authServerConfig['creation_claim_attribute_map'],
-            $authServerConfig['random_password_on_creation'],
+            $authServerConfig['create_user_action_class']
         );
     }
 }

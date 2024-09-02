@@ -4,7 +4,7 @@ namespace Abublihi\LaravelExternalJwtGuard\Exceptions;
 
 use Exception;
 
-class CouldNotFindAuthorizationServerConfig extends Exception
+class InvaildGuardException extends Exception
 {
     // 
 }

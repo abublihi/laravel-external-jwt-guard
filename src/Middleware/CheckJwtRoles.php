@@ -2,11 +2,12 @@
 
 namespace Abublihi\LaravelExternalJwtGuard\Middleware;
 
-use Abublihi\LaravelExternalJwtGuard\JwtGuardDriver;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
+use Abublihi\LaravelExternalJwtGuard\JwtGuardDriver;
+use Abublihi\LaravelExternalJwtGuard\Exceptions\InvaildGuardException;
 
 class CheckJwtRoles
 {
@@ -14,6 +15,7 @@ class CheckJwtRoles
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @throws InvaildGuardException
      */
     public function handle(Request $request, Closure $next, string $requiredRoles = null): Response
     {
@@ -22,7 +24,7 @@ class CheckJwtRoles
         }
 
         if (!Auth::guard() instanceof JwtGuardDriver) {
-            throw new \Exception('CheckJwtRoles should only used with JwtGuardDriver (external-jwt-auth), currently used: '.get_class(auth()->guard()));
+            throw new InvaildGuardException('CheckJwtRoles should only used with JwtGuardDriver (external-jwt-auth), currently used: '.get_class(auth()->guard()));
         }
 
         /**
@@ -32,7 +34,7 @@ class CheckJwtRoles
         $jwtRoles = $auth->getParsedJwt()->getRoles();
 
         if ($requiredRoles && empty($jwtRoles)) {
-            abort(403, 'User does not have the right roles.');
+            abort(403, __('User does not have the right roles.'));
         }
 
         $requiredRoles = explode('|', $requiredRoles);
@@ -43,6 +45,6 @@ class CheckJwtRoles
             }
         }
 
-        abort(403, 'User does not have the right roles.');
+        abort(403, __('User does not have the right roles.'));
     }
 }
