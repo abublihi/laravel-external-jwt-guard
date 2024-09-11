@@ -6,13 +6,13 @@ class AuthorizationServerConfig
 {
     public string $publicKey;
     public string $idClaim;
-    public string $roleClaim;
+    public string|null $roleClaim;
     public string $idAttribute;
     public string $signingAlgorithm;
     public bool $validateIssuer;
     public string $issuer;
     public bool $createUser;
-    public string $createUserActionClass;
+    public string|null $createUserActionClass;
     
     /** 
      * @param array $creationClaimAttributeMap
@@ -20,13 +20,13 @@ class AuthorizationServerConfig
     public function __construct(
         string $publicKey,
         string $idClaim,
-        string $roleClaim,
+        string|null $roleClaim,
         string $idAttribute,
         string $signingAlgorithm,
         bool $validateIssuer,
         string $issuer,
         bool $createUser,
-        string $createUserActionClass,
+        string|null $createUserActionClass,
     )
     {
         $this->publicKey = $publicKey;
@@ -54,13 +54,13 @@ class AuthorizationServerConfig
         return new self(
             $authServerConfig['public_key'] ?? '',
             $authServerConfig['id_claim'],
-            $authServerConfig['roles_claim'],
+            $authServerConfig['roles_claim'] ?? null,
             $authServerConfig['id_attribute'],
             $authServerConfig['signing_algorithm'] ?? 'RS256',
             $authServerConfig['validate_issuer'] ?? true,
             $authServerConfig['issuer'] ?? '',
             $authServerConfig['create_user'] ?? false,
-            $authServerConfig['create_user_action_class']
+            $authServerConfig['create_user_action_class'] ?? null
         );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Abublihi\LaravelExternalJwtGuard\Support;
 
+use Illuminate\Support\Arr;
 use Lcobucci\JWT\JwtFacade;
 use Lcobucci\Clock\FrozenClock;
 use Lcobucci\JWT\UnencryptedToken;
@@ -22,7 +23,7 @@ class JwtParser
     private string $jwt;
     private string $publicKey;
     private string $idClaim;
-    private string $rolesClaim;
+    private string|null $rolesClaim;
     private string $algorithm = 'RS256';
     private string $issuer = '';
     private bool $validateIssuer = true;
@@ -31,7 +32,7 @@ class JwtParser
         string $jwt,
         string $idClaim,
         string $publicKey,
-        string $rolesClaim,
+        string|null $rolesClaim,
         string $algorithm = 'RS256',
         string $issuer = '',
         bool $validateIssuer = true
@@ -49,7 +50,7 @@ class JwtParser
             throw new JwtValidationException($this->errorMessage);
         }
 
-        $this->claims = \Arr::dot($this->parsedJwt->claims()->all());
+        $this->claims = Arr::dot($this->parsedJwt->claims()->all());
     }
 
     private function getAlgorithmClass(): string
@@ -151,7 +152,7 @@ class JwtParser
 
     public function getRoles()
     {
-        return $this->getClaim($this->rolesClaim);
+        return $this->rolesClaim ? $this->getClaim($this->rolesClaim) : null;
     }
 
     /**
