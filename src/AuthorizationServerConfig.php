@@ -6,7 +6,7 @@ class AuthorizationServerConfig
 {
     public string $publicKey;
     public string $idClaim;
-    public string $roleClaim;
+    public string|null $roleClaim;
     public string $idAttribute;
     public string $signingAlgorithm;
     public bool $validateIssuer;
@@ -20,7 +20,7 @@ class AuthorizationServerConfig
     public function __construct(
         string $publicKey,
         string $idClaim,
-        string $roleClaim,
+        string|null $roleClaim,
         string $idAttribute,
         string $signingAlgorithm,
         bool $validateIssuer,
@@ -54,7 +54,7 @@ class AuthorizationServerConfig
         return new self(
             $authServerConfig['public_key'] ?? '',
             $authServerConfig['id_claim'],
-            $authServerConfig['roles_claim'],
+            $authServerConfig['roles_claim'] ?? null,
             $authServerConfig['id_attribute'],
             $authServerConfig['signing_algorithm'] ?? 'RS256',
             $authServerConfig['validate_issuer'] ?? true,
