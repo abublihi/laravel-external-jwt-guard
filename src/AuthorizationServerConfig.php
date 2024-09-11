@@ -12,7 +12,7 @@ class AuthorizationServerConfig
     public bool $validateIssuer;
     public string $issuer;
     public bool $createUser;
-    public string $createUserActionClass;
+    public string|null $createUserActionClass;
     
     /** 
      * @param array $creationClaimAttributeMap
@@ -26,7 +26,7 @@ class AuthorizationServerConfig
         bool $validateIssuer,
         string $issuer,
         bool $createUser,
-        string $createUserActionClass,
+        string|null $createUserActionClass,
     )
     {
         $this->publicKey = $publicKey;
@@ -60,7 +60,7 @@ class AuthorizationServerConfig
             $authServerConfig['validate_issuer'] ?? true,
             $authServerConfig['issuer'] ?? '',
             $authServerConfig['create_user'] ?? false,
-            $authServerConfig['create_user_action_class']
+            $authServerConfig['create_user_action_class'] ?? null
         );
     }
 }
