@@ -16,7 +16,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 class FakeTokenIssuer
 {
     public Authenticatable $user;
-    public string $authorizationServer = 'default';
     public bool $valid = true;
     public bool $expired = false;
     public array $claims = [];
@@ -27,13 +26,11 @@ class FakeTokenIssuer
     private string $publicKey;
 
     public function __construct(
-        Authenticatable $user,
-        string $authorizationServer = 'default',
+        Authenticatable $user
     )
     {
         Log::warning('Generating a fake token: This should only be on the testing environment see: Abublihi\LaravelExternalJwtGuard\Support\ActingAs');
 
-        $this->authorizationServer = $authorizationServer;
         $this->user = $user;
 
         $this->privateKey = openssl_pkey_new([
@@ -72,7 +69,14 @@ class FakeTokenIssuer
     
     public function asExpired(): self
     {
-        $this->expired = false;
+        $this->expired = true;
+
+        return $this;
+    }
+
+    public function setIssuer(string $issuer): self
+    {
+        $this->issuer = $issuer;
 
         return $this;
     }
