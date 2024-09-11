@@ -230,7 +230,131 @@ Example JWT with roles claim
 }
 ```
 
-### Testing
+## Testing
+
+### ActingAs Functionality 
+
+This package provide actingAs function which help you to test you routes that are protected by the `external-jwt-auth` guard, To use it simply use the `\Abublihi\LaravelExternalJwtGuard\Traits\ActingAs` trait in your test, then call `actingAsExternalJwt` function, this will generate a configiruation (private and public key) and a vaild token then add it to the request headers using `$this->withHeader(..)` 
+
+```php
+class SampleTest extends TestCase
+{
+    use DatabaseMigrations, \Abublihi\LaravelExternalJwtGuard\Traits\ActingAs;
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_authenticated_user_by_jwt()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsExternalJwt($user);
+    }
+}
+```
+
+if you want to generate a token with some custom claims or as invaild or as expired, you can pass an instance of `Abublihi\LaravelExternalJwtGuard\Support\FakeTokenIssuer` to `actingAsExternalJwt`
+
+
+if you want to generate a token which is invaild or expired for example you can pass an instance of `Abublihi\LaravelExternalJwtGuard\Support\FakeTokenIssuer` to `actingAsExternalJwt`
+
+```php
+use Abublihi\LaravelExternalJwtGuard\Support\FakeTokenIssuer;
+
+class SampleTest extends TestCase
+{
+    use DatabaseMigrations, \Abublihi\LaravelExternalJwtGuard\Traits\ActingAs;
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_authenticated_when_with_role_admin()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsExternalJwt(
+            FakeTokenIssuer:user($user)
+                ->withClaims([
+                    'roles' => [
+                        'admin'
+                    ]
+                ])
+        );
+    }
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_authenticated_when_with_custom_claim_employee_name()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsExternalJwt(
+            FakeTokenIssuer:user($user)
+                ->withClaims([
+                    'employee_name' => 'Mohammed Abdullah',
+                    'other_info' => [
+                        'info 1',
+                        'info 2'
+                    ]
+                ])
+        );
+    }
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_unauthenticated_when_invaild()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsExternalJwt(
+            FakeTokenIssuer:user($user)
+                ->asInvalid()
+        );
+    }
+ 
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_unauthenticated_when_expired()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsExternalJwt(
+            FakeTokenIssuer:user($user)
+                ->asExpired()
+        );
+    }
+}
+```
+
+The generated code and configuration will be set to the `default` authorization server, you can change it by passing the authorization server key to the second param.
+
+```php
+class SampleTest extends TestCase
+{
+    use DatabaseMigrations, \Abublihi\LaravelExternalJwtGuard\Traits\ActingAs;
+
+    /**
+     * @test
+     * @define-route usesAuthRoutes
+     */
+    function test_it_returns_authenticated_user_by_jwt()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAsExternalJwt($user, 'admin'); // this will set the authorization server key to `admin`
+    }
+}
+```
+
+### Testin the package
 
 ```bash
 composer test
