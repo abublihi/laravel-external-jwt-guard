@@ -165,12 +165,12 @@ namespace App\Auth\Guards;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
+ues App\Services\JwtParser;
 
 class JwtGuardDriver implements Guard
 {
     use GuardHelpers;
 
-    private AuthorizationServerConfig|null $authorizationServerConfig;
     private JwtParser|null $parsedJwt;
 
     public function __construct(
@@ -189,6 +189,7 @@ class JwtGuardDriver implements Guard
             return $this->parsedJwt = null;
         }
 
+        // you should validate the configurations 
         return $this->parsedJwt = new JwtParser(
             $token,
             config('external_jwt_auth.id_claim'),
