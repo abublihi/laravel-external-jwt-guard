@@ -8,6 +8,10 @@ This package provides a simple custom authentication guard for Laravel using an 
 
 ![](https://github.com/abublihi/laravel-external-jwt-guard/assets/10172039/20ca24cf-7684-4fc6-a9ce-515823a5a7da)
 
+## Stand Alone 
+
+If you prefer not to install the package, I highly recommend using the standalone code by following the guide here [stand alone](stand-alone.md)
+
 ## Installation
 
 You can install the package via composer:
@@ -21,6 +25,7 @@ publish the configuration file `externaljwtguard.php`
 ```bash
 php artisan vendor:publish --provider="Abublihi\LaravelExternalJwtGuard\LaravelExternalJwtGuardServiceProvider" --tag config
 ```
+
 ## Usage
 
 The package is very simple but also powerful when it comes to customization, After installation and publishing of the configurations you should first configure your `default` authorization server,

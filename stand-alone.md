@@ -4,12 +4,12 @@ Here I will guide you throw a basic instruction to add it to your project withou
 
 ---
 
-## 1. Install lcobucci/jwt
+## 1. Install lcobucci/jwt & lcobucci/clock
 
 If you haven’t already, install `lcobucci/jwt` package:
 
 ```bash
-composer require lcobucci/jwt
+composer require lcobucci/jwt lcobucci/clock
 ```
 
 ---
@@ -157,7 +157,7 @@ class JwtValidationException extends AuthenticationException
 
 Create a guard class that uses lcobucci/jwt to validate the JWT.
 
-```php name=app/Auth/Guards/ExternalJwtGuard.php
+```php name=app/Auth/Guards/JwtGuardDriver.php
 <?php
 
 namespace App\Auth\Guards;
@@ -165,7 +165,7 @@ namespace App\Auth\Guards;
 use Illuminate\Auth\GuardHelpers;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\UserProvider;
-ues App\Services\JwtParser;
+use App\Services\JwtParser;
 
 class JwtGuardDriver implements Guard
 {
@@ -190,6 +190,7 @@ class JwtGuardDriver implements Guard
         }
 
         // you should validate the configurations 
+        // is sugguset that you have it in external_jwt_auth config file it can be anywhere e.g. servics etc 
         return $this->parsedJwt = new JwtParser(
             $token,
             config('external_jwt_auth.id_claim'),
@@ -218,7 +219,7 @@ class JwtGuardDriver implements Guard
     {
         $this->getParsedJwt();
 
-        if (!$this->authorizationServerConfig || !$this->parsedJwt) {
+        if (!$this->parsedJwt) {
             return $this->user;
         }
 
@@ -229,26 +230,16 @@ class JwtGuardDriver implements Guard
             return $this->user;
         }
 
+        // Here you should retirve the user by credentials using the getId() function from the parsedJwt
+        // you should take care here usgin the right id reference in your users table  
         $user = $this->provider->retrieveByCredentials(
             [
-                $this->authorizationServerConfig->idAttribute => $this->parsedJwt->getId(),
+              'id' => $this->parsedJwt->getId(), // id is the id_attribute => id_claim
             ]
         );
 
-        if (
-            !$user
-            && $this->authorizationServerConfig->createUser
-        ) {
-            /**
-             * @var CreateUserActionInterface
-             */
-            $actionObject = new $this->authorizationServerConfig->createUserActionClass;
-            $user = $actionObject->create(
-                $this->provider,
-                $this->parsedJwt,
-                $this->authorizationServerConfig
-            );
-        }
+        // you can also check if the user is null create the user here or dispatch an event. 
+
 
         return $this->user = $user;
     }
@@ -271,14 +262,15 @@ In your AuthServiceProvider:
 
 ```php name=app/Providers/AuthServiceProvider.php
 use Illuminate\Support\Facades\Auth;
-use App\Auth\Guards\ExternalJwtGuard;
+use App\Auth\Guards\JwtGuardDriver;
 
 public function boot()
 {
     $this->registerPolicies();
 
+    // the name can be anything you want.
     Auth::extend('external-jwt', function ($app, string $name, array $config) { 
-        return new ExternalJwtGuard(Auth::createUserProvider($config['provider']));
+        return new JwtGuardDriver(Auth::createUserProvider($config['provider']));
     });
 }
 ```
