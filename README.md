@@ -1,3 +1,7 @@
+> [!CAUTION]
+> This package is abandoned and no longer maintained. 
+I highly recommend using the standalone code by following the guide here [stand alone](stand-alone.md)
+
 # Laravel External JWT Guard
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/abublihi/laravel-external-jwt-guard.svg?style=flat-square)](https://packagist.org/packages/abublihi/laravel-external-jwt-guard)
@@ -10,7 +14,7 @@ This package provides a simple custom authentication guard for Laravel using an 
 
 ## Stand Alone 
 
-If you prefer not to install the package, I highly recommend using the standalone code by following the guide here [stand alone](stand-alone.md)
+I highly recommend using the standalone code by following the guide here [stand alone](stand-alone.md)
 
 ## Installation
 
